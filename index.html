@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>Hello!</title>
+   </head>
+   <script src = "/socket.io/socket.io.js"></script>
+   <body>
+    <input id="message" type="text"></input>
+    <button id="send">Send</button>
+    <div id="messageBoard">
+        
+
+    </div>
+
+
+
+    <script>
+        const socket = io('http://192.168.2.15:8080');
+     
+        document.getElementById('send').addEventListener('click', (e) => {
+            e.preventDefault();
+            let message = document.getElementById('message').value;
+            socket.emit('chat message', message);
+            document.getElementById('message').value = ''; // Clear input
+        });
+     
+        socket.on('chat message', (msg) => {
+            let messageBoard = document.getElementById('messageBoard');
+            messageBoard.innerHTML += `<p>${msg}</p>`;
+        });
+     </script>
+   </body>
+</html>
