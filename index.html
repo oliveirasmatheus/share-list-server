@@ -21,7 +21,7 @@
             e.preventDefault();
             let message = document.getElementById('message').value;
             socket.emit('chat message', message);
-            document.getElementById('message').value = ''; // Clear input
+            document.getElementById('message').value = '';
         });
      
         socket.on('chat message', (msg) => {
