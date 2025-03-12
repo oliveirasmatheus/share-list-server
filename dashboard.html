@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <style>
+    .list { border: 1px solid #ccc; padding: 10px; margin: 10px; }
+    .item { margin: 5px 0; }
+  </style>
+</head>
+<body>
+  <h1>Your Lists</h1>
+  <div id="listsContainer"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    // Fetch lists on page load
+    fetch('/api/lists')
+      .then(res => res.json())
+      .then(data => renderLists(data));
+
+    function renderLists({ lists, sharedLists }) {
+      const container = document.getElementById('listsContainer');
+      
+      // Render owned lists
+      lists.forEach(list => {
+        const listDiv = document.createElement('div');
+        listDiv.className = 'list';
+        listDiv.innerHTML = `
+          <h3>${list.title}</h3>
+          <div class="items"></div>
+          <input type="text" placeholder="Add item">
+          <button onclick="addItem('${list.id}', this.previousElementSibling.value)">Add</button>
+        `;
+        container.appendChild(listDiv);
+      });
+
+      // Render shared lists
+      sharedLists.forEach(list => {
+        const listDiv = document.createElement('div');
+        listDiv.className = 'list';
+        listDiv.innerHTML = `
+          <h3>Shared: ${list.title} (Owner: ${list.owner.firstName})</h3>
+          <div class="items"></div>
+          <input type="text" placeholder="Add item">
+          <button onclick="addItem('${list.id}', this.previousElementSibling.value)">Add</button>
+        `;
+        container.appendChild(listDiv);
+      });
+    }
+
+    function addItem(listId, itemName) {
+      if (!itemName) return;
+      socket.emit('addItem', { listId, itemName });
+    }
+
+    // Listen for real-time updates
+    socket.on('newItem', (item) => {
+      const itemsDiv = document.querySelector(`[data-list-id="${item.listId}"] .items`);
+      if (itemsDiv) {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'item';
+        itemElement.textContent = `${item.name} (Quantity: ${item.quantity})`;
+        itemsDiv.appendChild(itemElement);
+      }
+    });
+  </script>
+</body>
+</html>
